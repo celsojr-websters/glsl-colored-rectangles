@@ -148,7 +148,7 @@ Ensure that you have an HTML file that initializes WebGL and links the shader co
 - Initializing WebGL in JavaScript.
 - Compiling and linking the vertex and fragment shaders (where this GLSL code resides).
 
-## 6. Project Structure
+### 6. Project Structure
 
 ```sh
 .
@@ -206,6 +206,8 @@ Ensure that you have an HTML file that initializes WebGL and links the shader co
 
 - **No WebGL Abstractions**: This project uses **pure WebGL** without any dependencies like **Three.js** or other libraries. The shader code directly interacts with the WebGL rendering pipeline for complete control over rendering operations.
 - **No Additional Dependencies**: Other than the development server (`sirv`), there are no additional frameworks or libraries abstracting WebGL.
+
+---
 
 ### Disclaimer
 
