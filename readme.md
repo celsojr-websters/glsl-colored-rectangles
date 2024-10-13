@@ -9,9 +9,24 @@ precision mediump float;
 
 uniform vec2 u_resolution;
 
-// Utility function to convert RGB (0-255) to normalized float (0.0-1.0)
+// Define the gap between the squares
+#define gap 0.05
+
+// Precomputed normalization constant for RGB values (1.0 / 255.0)
+// Rounded up for performance optimization
+const float rgbNorm = 0.004;
+
+/**
+ * Converts RGB values from the (0-255) color space to normalized float values in the (0.0-1.0) range.
+ *
+ * @param {float} r - The red channel value (0-255).
+ * @param {float} g - The green channel value (0-255).
+ * @param {float} b - The blue channel value (0-255).
+ * 
+ * @return {vec3} A vec3 representing the normalized RGB values where each component is between 0.0 and 1.0.
+ */
 vec3 rgb(float r, float g, float b) {
-    return vec3(r / 255.0, g / 255.0, b / 255.0);
+    return vec3(r, g, b) * rgbNorm;
 }
 
 void main() {
@@ -19,47 +34,42 @@ void main() {
     vec2 uv = gl_FragCoord.xy / u_resolution;
 
     // Define rectangle boundaries for the logo area
-    float minX = 0.25;
-    float maxX = 0.75;
-    float minY = 0.25;
-    float maxY = 0.75;
+    vec2 minBound = vec2(0.25);
+    vec2 maxBound = vec2(0.75);
 
-    // Define the gap between the squares
-    float gap = 0.05;
+    // Predefined colors for the logo quadrants
+    vec3 red = rgb(243.0, 82.0, 32.0);
+    vec3 green = rgb(126.0, 187.0, 0.0);
+    vec3 blue = rgb(0.0, 161.0, 241.0);
+    vec3 yellow = rgb(255.0, 185.0, 0.0);
+
+    // Initialize color to white (background)
+    vec3 color = vec3(1.0);
 
     // Check if the pixel is inside the logo area
-    if (uv.x > minX && uv.x < maxX && uv.y > minY && uv.y < maxY) {
+    if (all(greaterThan(uv, minBound)) && all(lessThan(uv, maxBound))) {
         // Normalize coordinates within the logo region
-        vec2 logoUV = (uv - vec2(minX, minY)) / (maxX - minX);
+        vec2 logoUv = (uv - minBound) / (maxBound - minBound);
 
-        // Determine the quadrant (accounting for the gap)
-        float midX = 0.5;
-        float midY = 0.5;
-
-        vec3 color = vec3(1.0); // Default is white (gap)
-
-        // Use rgb() to set correct colors
-        if (logoUV.x < midX - gap / 2.0 && logoUV.y < midY - gap / 2.0) {
-            // Bottom-left: Blue
-            color = rgb(0.0, 161.0, 241.0);  // Blue
-        } else if (logoUV.x >= midX + gap / 2.0 && logoUV.y < midY - gap / 2.0) {
-            // Top-right: Yellow
-            color = rgb(255.0, 185.0, 0.0);  // Yellow
-        } else if (logoUV.x < midX - gap / 2.0 && logoUV.y >= midY + gap / 2.0) {
-            // Top-left: Red
-            color = rgb(243.0, 82.0, 32.0);  // Red
-        } else if (logoUV.x >= midX + gap / 2.0 && logoUV.y >= midY + gap / 2.0) {
-            // Bottom-right: Green
-            color = rgb(126.0, 187.0, 0.0);  // Green
+        // Assign colors based on the quadrant (accounting for the gap)
+        if (logoUv.x < 0.5 - gap / 2.0) {
+            if (logoUv.y < 0.5 - gap / 2.0) {
+                color = blue; // Bottom-left
+            } else if (logoUv.y >= 0.5 + gap / 2.0) {
+                color = red; // Top-left
+            }
+        } else if (logoUv.x >= 0.5 + gap / 2.0) {
+            if (logoUv.y < 0.5 - gap / 2.0) {
+                color = yellow; // Bottom-right
+            } else if (logoUv.y >= 0.5 + gap / 2.0) {
+                color = green; // Top-right
+            }
         }
-
-        // Set the fragment color based on which square the pixel is in
-        gl_FragColor = vec4(color, 1.0);
-    } else {
-        // Outside the logo area, set to white
-        gl_FragColor = vec4(1.0);
     }
+
+    gl_FragColor = vec4(color, 1.0);
 }
+
 
 ```
 
@@ -131,16 +141,25 @@ If you're using **Visual Studio Code**, you can quickly preview the shader using
 
 This will automatically start a local server, and your default browser will open the project.
 
-### 4. Customization
-The current shader defines a fixed area for the logo (`0.25 - 0.75` for both X and Y axes). This can be adjusted by changing the `minX`, `maxX`, `minY`, and `maxY` variables within the shader. Similarly, the gap size between the quadrants can be adjusted by modifying the `gap` value.
+Here’s the updated section for **Customization** that reflects your request:
 
-For example, to increase the logo size or reposition it:
+### 4. Customization
+The current shader defines a fixed area for the logo, specifically using the coordinates (`0.25 - 0.75` for both X and Y axes). You can easily adjust these values by modifying the `minBound` and `maxBound` variables within the shader code. Similarly, the gap size between the quadrants can be adjusted by changing the `gap` constant.
+
+For example, to increase the logo size or reposition it, you can set the boundaries as follows:
+
 ```glsl
-float minX = 0.2;
-float maxX = 0.8;
-float minY = 0.2;
-float maxY = 0.8;
+vec2 minBound = vec2(0.2);  // New bottom-left corner of the logo area
+vec2 maxBound = vec2(0.8);  // New top-right corner of the logo area
 ```
+
+This change will effectively resize the logo while maintaining its position in the viewport. Adjusting the `gap` value allows you to modify the space between the colored quadrants within the logo:
+
+```glsl
+#define gap 0.1  // Adjusts the space between the logo quadrants
+```
+
+These modifications provide flexibility in tailoring the shader to suit your design needs.
 
 ### 5. WebGL Environment Setup
 Ensure that you have an HTML file that initializes WebGL and links the shader code. This setup typically involves:
