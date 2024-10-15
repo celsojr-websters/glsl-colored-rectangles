@@ -5,77 +5,58 @@
 </div>
 
 ```glsl
-precision mediump float;
-
-uniform vec2 u_resolution;
-
-// Define the gap between the squares
-#define gap 0.05
-
-// Precomputed normalization constant for RGB values (1.0 / 255.0)
-// Rounded up for performance optimization
-const float rgbNorm = 0.004;
+#include "common.glsl"
 
 /**
- * Converts RGB values from the (0-255) color space to normalized float values in the (0.0-1.0) range.
+ * Determines the color of the pixel based on the Microsoft logo design. 
+ * The logo consists of four quadrants, each with a distinct color (blue, red, yellow, green),
+ * with a specified gap between the quadrants.
  *
- * @param {float} r - The red channel value (0-255).
- * @param {float} g - The green channel value (0-255).
- * @param {float} b - The blue channel value (0-255).
- * 
- * @return {vec3} A vec3 representing the normalized RGB values where each component is between 0.0 and 1.0.
+ * @param {vec2} uv - The normalized UV coordinates of the pixel in the [0.0, 1.0] range.
+ * @param {vec2} minBound - The minimum UV bounds for the logo area.
+ * @param {vec2} maxBound - The maximum UV bounds for the logo area.
+ * @param {float} gap - The gap size between the squares, expressed as a normalized value (0.0-1.0).
+ *
+ * @return {vec3} A vec3 representing the color of the pixel within the logo, 
+ *                either blue, red, yellow, green, or white (background).
  */
-vec3 rgb(float r, float g, float b) {
-    return vec3(r, g, b) * rgbNorm;
-}
-
-void main() {
-    // Normalize pixel coordinates to range [0, 1]
-    vec2 uv = gl_FragCoord.xy / u_resolution;
-
-    // Define rectangle boundaries for the logo area
-    vec2 minBound = vec2(0.25);
-    vec2 maxBound = vec2(0.75);
-
-    // Predefined colors for the logo quadrants
+vec3 drawMicrosoftLogo(vec2 uv, vec2 minBound, vec2 maxBound, float gap) {
     vec3 red = rgb(243.0, 82.0, 32.0);
     vec3 green = rgb(126.0, 187.0, 0.0);
     vec3 blue = rgb(0.0, 161.0, 241.0);
     vec3 yellow = rgb(255.0, 185.0, 0.0);
-
-    // Initialize color to white (background)
+    
+    // Default color (white background)
     vec3 color = vec3(1.0);
 
-    // Check if the pixel is inside the logo area
+    // Check if the UV coordinates are inside the logo bounds
     if (all(greaterThan(uv, minBound)) && all(lessThan(uv, maxBound))) {
-        // Normalize coordinates within the logo region
+        // Normalize UV within the logo region
         vec2 logoUv = (uv - minBound) / (maxBound - minBound);
 
-        // Assign colors based on the quadrant (accounting for the gap)
+        // Assign colors based on quadrant (with gap)
         if (logoUv.x < 0.5 - gap / 2.0) {
             if (logoUv.y < 0.5 - gap / 2.0) {
-                color = blue; // Bottom-left
+                color = blue;  // Bottom-left
             } else if (logoUv.y >= 0.5 + gap / 2.0) {
-                color = red; // Top-left
+                color = red;   // Top-left
             }
         } else if (logoUv.x >= 0.5 + gap / 2.0) {
             if (logoUv.y < 0.5 - gap / 2.0) {
                 color = yellow; // Bottom-right
             } else if (logoUv.y >= 0.5 + gap / 2.0) {
-                color = green; // Top-right
+                color = green;  // Top-right
             }
         }
     }
 
-    gl_FragColor = vec4(color, 1.0);
+    return color;
 }
-
-
 ```
 
 ## Overview
 
-This project is a GLSL fragment shader that visually replicates the classic four-color **Microsoft® logo** using WebGL. The shader dynamically divides a rectangular area into four quadrants, with each representing one of the four signature colors of the Microsoft® logo: blue, yellow, red, and green. A small gap between the quadrants simulates the logo's layout, making it visually recognizable. 
+This project is a GLSL fragment shader that visually replicates the classic four-color Microsoft® logo using WebGL. The shader dynamically divides a rectangular area into four quadrants, with each representing one of the four signature colors of the Microsoft® logo: blue, yellow, red, and green. A small gap between the quadrants simulates the logo's layout, making it visually recognizable. 
 
 The shader runs entirely in a WebGL context, directly manipulating the GPU without additional frameworks. This project is ideal for learning about GLSL, working directly with WebGL, and understanding pixel-level rendering.
 
@@ -105,7 +86,7 @@ The shader runs entirely in a WebGL context, directly manipulating the GPU witho
 
 You have three alternatives to run this shader project locally. Choose the method that best suits your development environment. None of them are mandatory, and each provides the same result.
 
-### 1. Install and Start Local Server (Using Node.js and npm)
+### 1. Install and start local server (using Node.js and npm)
 
 This option uses `sirv` as a static file server, which is installed automatically via npm. After cloning the repository and navigating to the root folder, run the following command to install dependencies:
 
@@ -113,7 +94,7 @@ This option uses `sirv` as a static file server, which is installed automaticall
 npm install
 ```
 
-This will automatically run a script that starts a local development server using **sirv**. The shader will be served on `http://localhost:8080`. You can view the running WebGL shader by opening this address in your browser.
+This will automatically run a script that starts a local development server using `sirv`. The shader will be served on `http://localhost:8080`. You can view the running WebGL shader by opening this address in your browser.
 
 Alternatively, you can manually start the server if needed by running:
 
@@ -121,7 +102,7 @@ Alternatively, you can manually start the server if needed by running:
 npm run start
 ```
 
-### 2. Using Python's Built-in HTTP Server (Optional)
+### 2. Using Python's built-in HTTP server (optional)
 
 You can also run the project by serving the static files with Python’s built-in HTTP server. This approach does not require Node.js or npm. To do so, run the following command from the root directory of the project:
 
@@ -131,7 +112,7 @@ python.exe -m http.server
 
 This will start a server on `http://localhost:8000`, which you can access in your browser to view the shader.
 
-### 3. Live Server Extension for Visual Studio Code (Optional)
+### 3. Live Server extension for Visual Studio Code (optional)
 
 If you're using **Visual Studio Code**, you can quickly preview the shader using the **Live Server** extension. Here's how:
 
@@ -140,8 +121,6 @@ If you're using **Visual Studio Code**, you can quickly preview the shader using
 3. Right-click `index.html` in the file explorer and select **Open with Live Server**.
 
 This will automatically start a local server, and your default browser will open the project.
-
-Here’s the updated section for **Customization** that reflects your request:
 
 ### 4. Customization
 The current shader defines a fixed area for the logo, specifically using the coordinates (`0.25 - 0.75` for both X and Y axes). You can easily adjust these values by modifying the `minBound` and `maxBound` variables within the shader code. Similarly, the gap size between the quadrants can be adjusted by changing the `gap` constant.
@@ -175,7 +154,7 @@ Ensure that you have an HTML file that initializes WebGL and links the shader co
 │    └── fragment.glsl # GLSL fragment shader for rendering the Microsoft logo
 ├── readme.md # This document
 ├── .vscode
-│   ├── extensions.json # Recommended extension used in this project
+│   ├── extensions.json # Recommended extension used in this project (@recommended)
 
 # All things glsl-canvas bellow except the screenshot
 ├── index.html # HTML file to initialize WebGL and host the shader
@@ -197,7 +176,7 @@ Ensure that you have an HTML file that initializes WebGL and links the shader co
 ├── LICENSE
 
 
-5 directories, 15 files
+6 directories, 16 files
 ```
 
 ### 7. Script Breakdown:
@@ -205,17 +184,17 @@ Ensure that you have an HTML file that initializes WebGL and links the shader co
 - **start**: Runs the `sirv` static server on port 8080, enabling live reloading during development.
 
 ### 8. Fragment Shader Logic:
-1. **Coordinate Normalization**: Converts pixel coordinates into the `[0.0, 1.0]` range, making the shader resolution-independent.
+1. **Coordinate Normalization**: Converts pixel coordinates into the `(0.0-1.0)` range, making the shader resolution-independent.
 2. **Quadrant Logic**: Divides the normalized space into four quadrants, applying specific colors to each region (blue, yellow, red, green) while maintaining a gap between them.
 3. **RGB to GLSL**: Uses an `rgb()` utility function to convert RGB values (0-255) to GLSL-compatible normalized floats (0.0-1.0).
 
 ### 9. Color Definitions:
 - **Bottom-left (Blue)**: `rgb(0, 161, 241)`
-- **Top-right (Yellow)**: `rgb(255, 185, 0)`
+- **Top-right (Green)**: `rgb(126, 187, 0)`
 - **Top-left (Red)**: `rgb(243, 82, 32)`
-- **Bottom-right (Green)**: `rgb(126, 187, 0)`
+- **Bottom-right (Yellow)**: `rgb(255, 185, 0)`
 
-### 10. Overview of the GLSL program's workflow::
+### 10. Overview of an WebGL GLSL program's workflow::
 - Attach the shader code as a fragment shader.
 - Define a vertex shader (typically a simple pass-through).
 - Bind the fragment shader to a WebGL program and draw the content to a canvas.
@@ -223,11 +202,11 @@ Ensure that you have an HTML file that initializes WebGL and links the shader co
 
 ### Additional Notes
 
-- **No WebGL Abstractions**: This project uses **pure WebGL** without any dependencies like **Three.js** or other libraries. The shader code directly interacts with the WebGL rendering pipeline for complete control over rendering operations.
-- **No Additional Dependencies**: Other than the development server (`sirv`), there are no additional frameworks or libraries abstracting WebGL.
+- **No WebGL abstractions**: This project uses **pure WebGL** without any dependencies like Three.js or other libraries. The shader code directly interacts with the WebGL rendering pipeline for complete control over rendering operations.
+- **No additional WebGL dependencies**: There are no additional frameworks or libraries abstracting WebGL.
 
 ---
 
 ### Disclaimer
 
-This project is intended solely for educational purposes to demonstrate GLSL techniques. The Microsoft® logo is used here only as a visual reference for learning and experimentation. I am not affiliated with Microsoft®, and this project is neither sponsored nor endorsed by Microsoft®, the .NET Foundation, or any of their affiliates. All trademarks and logos belong to their respective owners. The use of the Microsoft® logo in this project is not for commercial purposes. All rights reserved.
+This project is intended solely for educational purposes to demonstrate GLSL techniques. The Microsoft® logo is used here only as a visual reference for learning and experimentation. I am an MCSD but not affiliated with Microsoft®, and this project is neither sponsored nor endorsed by Microsoft®, the .NET Foundation, or any of their affiliates. All trademarks and logos belong to their respective owners. The use of the Microsoft® logo in this project is not for commercial purposes. All rights reserved.
