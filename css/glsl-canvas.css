@@ -1,0 +1,31 @@
+html,
+body {
+    width: 100%;
+    height: 100%;
+}
+
+body {
+    display: flex;
+    margin: 0;
+    background: #fff;
+    overflow: hidden;
+    justify-content: center;
+    align-items: center;
+}
+
+.container {
+    position: relative;
+}
+
+.glsl-canvas {
+    width: 500px;
+    height: 500px;
+}
+
+#textOverlay {
+    position: absolute;
+    top: 77%;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 24px;
+}

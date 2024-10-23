@@ -1,0 +1,40 @@
+# Node modules
+node_modules/
+
+# Log files
+*.log
+
+# Build directories
+dist/
+build/
+
+# OS-specific files
+.DS_Store                # macOS
+Thumbs.db               # Windows
+
+# IDE and editor files
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+
+# Coverage directory used by tools like istanbul
+coverage/
+
+# Ignore local environment files
+.env
+.env.local
+
+# Ignore package lock files if you want to avoid version conflicts
+package-lock.json
+yarn.lock
+
+# Ignore compiled files
+*.o
+*.so
+*.exe
+*.out
